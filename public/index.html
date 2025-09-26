@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费AI图片生成 - Flux1 Dev</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 添加一些静态演示所需的额外样式 */
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #4f46e5;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .gallery-item {
+            background-color: var(--panel-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .gallery-item-info {
+            padding: 0.5rem;
+        }
+        .gallery-placeholder {
+            display: none;
+        }
+        .free-badge {
+            background-color: #10b981;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">免费使用</div>
+    
+    <header>
+        <div class="logo">
+            <h1>FluxPic <span class="free-badge">免费</span></h1>
+            <p>使用Flux1 Dev模型生成精美图片</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active" data-section="generator">图像生成</a></li>
+                <li><a href="#" data-section="gallery">我的图库</a></li>
+                <li><a href="#" data-section="settings">设置</a></li>
+            </ul>
+        </nav>
+        <div class="status-indicator">
+            <span id="status-icon" class="status-online"><i class="fas fa-circle"></i></span>
+            <span id="status-text">Flux1 Dev 已连接</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- 图像生成部分 -->
+        <section id="generator" class="active">
+            <div class="container">
+                <div class="panel">
+                    <h2>AI图片生成 <span class="free-badge">免费</span></h2>
+                    <div class="form-group">
+                        <label for="prompt">提示词</label>
+                        <textarea id="prompt" placeholder="输入详细的提示词来描述你想要生成的图像...">一只可爱的猫咪，坐在窗台上，阳光照射，高清摄影，4K，精细细节</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="negative-prompt">负面提示词</label>
+                        <textarea id="negative-prompt" placeholder="输入你不希望在图像中出现的元素...">模糊, 低质量, 变形, 不自然的姿势, 水印, 文字, 噪点</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="model">模型版本</label>
+                            <select id="model">
+                                <option value="flux1-dev" selected>Flux1 Dev (推荐)</option>
+                                <option value="flux1-schnell">Flux1 Schnell (快速)</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="style">风格预设</label>
+                            <select id="style">
+                                <option value="none">无风格</option>
+                                <option value="realistic">写实摄影</option>
+                                <option value="anime">动漫风格</option>
+                                <option value="3d">3D渲染</option>
+                                <option value="painting">油画风格</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group third">
+                            <label for="width">宽度</label>
+                            <select id="width">
+                                <option value="768">768px</option>
+                                <option value="1024" selected>1024px</option>
+                                <option value="1280">1280px</option>
+                            </select>
+                        </div>
+                        <div class="form-group third">
+                            <label for="height">高度</label>
+                            <select id="height">
+                                <option value="768">768px</option>
+                                <option value="1024" selected>1024px</option>
+                                <option value="1280">1280px</option>
+                            </select>
+                        </div>
+                        <div class="form-group third">
+                            <label for="num-outputs">生成数量</label>
+                            <select id="num-outputs">
+                                <option value="1" selected>1张</option>
+                                <option value="2">2张</option>
+                                <option value="4">4张</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="guidance-scale">引导强度 <span id="guidance-value">7.5</span></label>
+                            <input type="range" id="guidance-scale" min="1" max="20" value="7.5" step="0.1">
+                        </div>
+                        <div class="form-group half">
+                            <label for="seed">种子</label>
+                            <div class="seed-container">
+                                <input type="number" id="seed" value="-1" min="-1" max="2147483647">
+                                <button id="random-seed" title="随机种子"><i class="fas fa-dice"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button id="generate-btn" class="primary-btn"><i class="fas fa-magic"></i> 免费生成图片</button>
+                    </div>
+                </div>
+                
+                <div class="result-panel">
+                    <h2>生成结果</h2>
+                    <div id="loading-overlay" class="hidden">
+                        <div class="spinner"></div>
+                        <p id="loading-message">正在生成图片...</p>
+                    </div>
+                    <div id="image-result">
+                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="演示图像">
+                    </div>
+                    <div class="result-actions">
+                        <button id="save-btn"><i class="fas fa-download"></i> 保存</button>
+                        <button id="copy-btn"><i class="fas fa-copy"></i> 复制参数</button>
+                        <button id="share-btn"><i class="fas fa-share-alt"></i> 分享</button>
+                    </div>
+                    <div id="generation-info">
+                        <div class="info-item">
+                            <span class="label">状态:</span>
+                            <span id="generation-status">完成 (演示)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">耗时:</span>
+                            <span id="generation-time">4.2秒 (演示)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 图库部分 -->
+        <section id="gallery">
+            <div class="container">
+                <h2>我的图库 <span class="free-badge">本地保存</span></h2>
+                <div class="gallery-controls">
+                    <div class="search-box">
+                        <input type="text" placeholder="搜索图像...">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="filter-options">
+                        <select>
+                            <option value="all">所有图像</option>
+                            <option value="recent">最近生成</option>
+                            <option value="favorites">收藏夹</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="猫咪图像">
+                        <div class="gallery-item-info">
+                            <p>猫咪在窗台</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1618826411640-d6df44dd3f7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="宇航员图像">
+                        <div class="gallery-item-info">
+                            <p>宇航员在太空</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="抽象图像">
+                        <div class="gallery-item-info">
+                            <p>抽象渐变</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1682687220063-4742bd7fd538?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="风景图像">
+                        <div class="gallery-item-info">
+                            <p>山脉风景</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 设置部分 -->
+        <section id="settings">
+            <div class="container">
+                <h2>设置</h2>
+                <div class="settings-container">
+                    <div class="settings-group">
+                        <h3>API设置</h3>
+                        <div class="form-group">
+                            <label for="api-key">Flux1 API密钥 (可选)</label>
+                            <input type="password" id="api-key" placeholder="输入API密钥以提高生成限制">
+                            <p class="help-text">不填写也可以免费使用，但有每日生成次数限制</p>
+                        </div>
+                        <button id="test-connection" class="secondary-btn">测试API连接</button>
+                    </div>
+                    <div class="settings-group">
+                        <h3>界面设置</h3>
+                        <div class="form-group">
+                            <label for="theme-select">主题</label>
+                            <select id="theme-select">
+                                <option value="light">浅色</option>
+                                <option value="dark">深色</option>
+                                <option value="system">跟随系统</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="language-select">语言</label>
+                            <select id="language-select">
+                                <option value="zh">中文</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <h3>默认生成设置</h3>
+                        <div class="form-group">
+                            <label for="default-width">默认宽度</label>
+                            <select id="default-width">
+                                <option value="768">768px</option>
+                                <option value="1024" selected>1024px</option>
+                                <option value="1280">1280px</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="default-height">默认高度</label>
+                            <select id="default-height">
+                                <option value="768">768px</option>
+                                <option value="1024" selected>1024px</option>
+                                <option value="1280">1280px</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="default-guidance">默认引导强度</label>
+                            <input type="range" id="default-guidance" min="1" max="20" value="7.5" step="0.1">
+                            <span id="default-guidance-value">7.5</span>
+                        </div>
+                    </div>
+                    <button id="save-settings" class="primary-btn">保存设置</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FluxPic - 免费AI图片生成 | 使用 <a href="https://flux1.ai" target="_blank">Flux1 Dev</a> 模型提供支持</p>
+    </footer>
+
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <p id="loading-message">正在处理...</p>
+    </div>
+
+    <script src="js/static-demo.js"></script>
+</body>
+</html>

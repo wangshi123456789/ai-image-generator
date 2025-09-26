@@ -1,0 +1,31 @@
+# 依赖目录
+node_modules/
+
+# 环境变量
+.env
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 目录
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 上传的图片（可选，取决于是否想要包含示例图片）
+# uploads/
+
+# 构建输出
+/dist
+/build
