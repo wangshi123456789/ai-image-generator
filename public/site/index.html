@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>FluxPic AI 生成器</title>
+  <style>
+    body{font-family:system-ui;background:#111;color:#eee;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .card{background:#222;padding:2rem;border-radius:12px;box-shadow:0 8px 24px #00000066;text-align:center}
+    input,button{width:100%;padding:.75rem;margin:.5rem 0;border:none;border-radius:6px;font-size:1rem}
+    input{background:#333;color:#fff}
+    button{background:#0ebeff;color:#fff;cursor:pointer;font-weight:600}
+    button:disabled{background:#555;cursor:not-allowed}
+    img{width:100%;border-radius:6px;margin-top:1rem}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>FluxPic AI 图像生成器</h2>
+    <input id="prompt" placeholder="请输入英文提示词，例如：a cute cat">
+    <button id="generate">Generate</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const $ = q => document.querySelector(q);
+    $('#generate').onclick = async () => {
+      const btn = $('#generate');
+      btn.disabled = true;
+      btn.textContent = '生成中...';
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({prompt: $('#prompt').value})
+      });
+      if (!res.ok) {alert('生成失败'); btn.disabled=false; btn.textContent='Generate'; return;}
+      const blob = await res.blob();
+      $('#result').innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
+      btn.disabled = false;
+      btn.textContent = 'Generate';
+    };
+  </script>
+</body>
+</html>
